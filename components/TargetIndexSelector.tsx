@@ -9,7 +9,7 @@ const TargetindexSelector = ({
   targetIndexName,
 }: {
   onSelectIndex: (indexName: string) => void;
-  indices: Set<AlgoliaIndexType>;
+  indices: AlgoliaIndexType[];
   targetIndexName: string;
 }) => {
   return (

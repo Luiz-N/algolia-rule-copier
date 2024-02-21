@@ -27,7 +27,7 @@ export interface RuleHash {
 }
 
 interface AlgoliaContextState {
-  indices: AlgoliaIndexType[];
+  allIndices: AlgoliaIndexType[];
   loading: boolean;
   error: Error | null;
   sourceIndexName: string;
@@ -35,7 +35,7 @@ interface AlgoliaContextState {
   sourceIndexRules: RuleHash;
   targetIndexName: string;
   client: SearchClient | null;
-  targetIndices: Set<AlgoliaIndexType>;
+  targetIndices: AlgoliaIndexType[];
   setCredentials: (appId: string, apiKey: string) => void;
   setSourceIndexName: (indexName: string) => void;
   setSelectedRules: (rules: Set<string>) => void;
@@ -45,7 +45,7 @@ interface AlgoliaContextState {
 }
 
 const defaultState: AlgoliaContextState = {
-  indices: [],
+  allIndices: [],
   loading: false,
   error: null,
   sourceIndexName: "",
@@ -53,7 +53,7 @@ const defaultState: AlgoliaContextState = {
   sourceIndexRules: {},
   targetIndexName: "",
   client: null,
-  targetIndices: new Set<AlgoliaIndexType>(),
+  targetIndices: [],
   setCredentials: () => {},
   setSourceIndexName: () => {},
   setSelectedRules: () => {},
@@ -66,7 +66,7 @@ const AlgoliaContext = createContext<AlgoliaContextState>(defaultState);
 
 export const AlgoliaProvider = ({ children }: { children: ReactNode }) => {
   const [client, setClient] = useState<SearchClient | null>(null);
-  const [indices, setIndices] = useState<AlgoliaIndexType[]>([]);
+  const [allIndices, setAllIndices] = useState<AlgoliaIndexType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const [sourceIndexName, setSourceIndexName] = useState("");
@@ -76,18 +76,15 @@ export const AlgoliaProvider = ({ children }: { children: ReactNode }) => {
 
   const setCredentials = useCallback((appId: string, apiKey: string) => {
     const newClient = algoliasearch(appId, apiKey);
-    console.log({ newClient });
     setClient(newClient);
   }, []);
 
   const targetIndices = useMemo(() => {
     if (!sourceIndexName) {
-      return new Set([]);
+      return [];
     }
-    return new Set(
-      Array.from(indices).filter((index) => index.name !== sourceIndexName)
-    );
-  }, [indices, sourceIndexName]);
+    return allIndices.filter((index) => index.name !== sourceIndexName);
+  }, [allIndices, sourceIndexName]);
 
   useEffect(() => {
     if (!client) return;
@@ -96,8 +93,7 @@ export const AlgoliaProvider = ({ children }: { children: ReactNode }) => {
       client
         .listIndices()
         .then(({ items }) => {
-          console.log({ indices: items });
-          setIndices(items);
+          setAllIndices(items);
         })
         .catch((error) => console.error("Error fetching indices", error))
         .finally(() => {
@@ -116,8 +112,6 @@ export const AlgoliaProvider = ({ children }: { children: ReactNode }) => {
       .initIndex(sourceIndexName)
       .browseRules({
         batch: (batch: any) => {
-          console.log({ batch });
-
           batch.forEach((rule: RuleType) => {
             batchedRules[rule.objectID] = { ...rule };
             // add multiple dummy rules for testing via for loop
@@ -151,7 +145,6 @@ export const AlgoliaProvider = ({ children }: { children: ReactNode }) => {
     });
     Promise.all(promises)
       .then(() => {
-        console.log("Rules copied successfully");
         alert(
           `${selectedRules.size} rules copied successfully to ${targetIndexName}`
         );
@@ -169,7 +162,7 @@ export const AlgoliaProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AlgoliaContext.Provider
       value={{
-        indices,
+        allIndices,
         loading,
         error,
         sourceIndexName,

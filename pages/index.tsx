@@ -19,7 +19,7 @@ import {
 export default function Home() {
   const { data: session } = useSession();
   const {
-    indices,
+    allIndices,
     loading,
     error,
     sourceIndexName,
@@ -114,7 +114,7 @@ export default function Home() {
                 </small>
 
                 <IndicesList
-                  indices={indices}
+                  indices={allIndices}
                   onSelectIndex={setSourceIndexName}
                   selectedIndex={sourceIndexName}
                 />

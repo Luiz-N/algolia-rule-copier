@@ -17,17 +17,32 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  /* color: rgb(var(--foreground-rgb));
   background: linear-gradient(
       to bottom,
       transparent,
       rgb(var(--background-end-rgb))
     )
-    rgb(var(--background-start-rgb));
+    rgb(var(--background-start-rgb)); */
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+ul li[data-selected] {
+  color: #2f6ee8;
+  background-color: #d4e3fa;
+}
+
+.provider-button-wrapper button {
+  background-color: #000;
+  color: #fff;
+}
+
+.nav-bar header {
+  max-width: 80rem;
+  padding: 0;
 }
